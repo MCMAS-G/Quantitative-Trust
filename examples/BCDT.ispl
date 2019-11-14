@@ -1,0 +1,245 @@
+Agent Environment
+	Vars:
+		e_1: {e0,e1,e2,e3,e4,e5,e6,e7,e8,e9,e10,e11,e12,e13,e14,e15};
+		
+	end Vars
+	Actions = {e_Ask_for_Exam,e_Do_Exam,e_Refer_to_Rad,e_Perfor_image,e_path_recv_Tissue,e_Recommand_biobsy,e_Calc_detected, e_Request_biobsy, e_Tret_plane,e_Insert_info,e_collect_Tissue,e_send_to_path,e_Anl_Tissue,e_loop,e_Mass,e_NoMass,e_Send_report_Physi,e_Send_info_Reg, e_null};
+	Protocol:
+		e_1=e0 : {e_Ask_for_Exam};
+		e_1=e1 : {e_Do_Exam};
+		e_1=e2 : {e_Mass,e_NoMass};
+		e_1=e3 : {e_Refer_to_Rad};
+		e_1=e4 : {e_Perfor_image};
+		e_1=e5 : {e_Calc_detected};
+		e_1=e6 : {e_Recommand_biobsy};
+		e_1=e7 : {e_Request_biobsy};
+		e_1=e8 :{e_collect_Tissue};
+		e_1=e9 : {e_send_to_path};
+		e_1=e10 : {e_path_recv_Tissue};
+		e_1=e11 : {e_Anl_Tissue};
+		e_1=e12: {e_Send_report_Physi,e_Send_info_Reg};
+		e_1=e13: {e_Tret_plane};
+		e_1=e14: {e_Insert_info};
+		e_1=e15 : {e_null};
+		--Other: {e_null};
+	end Protocol
+	Evolution:
+		e_1=e1 if e_1=e0 and Action=e_Ask_for_Exam and Patia.Action=patia_Ask_for_Exam;
+		e_1=e2 if e_1=e1 and Action=e_Do_Exam and Physi.Action=physi_do_Exam;
+		e_1=e3 if e_1=e2 and Action=e_Mass and Physi.Action=Mass ;
+		e_1=e0 if e_1=e2 and Action=e_NoMass and Physi.Action=NoMass;
+		e_1=e4 if e_1=e3 and Action=e_Refer_to_Rad and Physi.Action=physi_refertoRadio;
+		e_1=e5 if e_1=e4 and Action=e_Perfor_image and Rad.Action=Perfor_image;
+		e_1=e6 if e_1=e5 and Action=e_Calc_detected and Rad.Action=Calc_detected;
+		e_1=e7 if e_1=e6 and Action=e_Recommand_biobsy and Rad.Action=Recommand_biobsy;
+		e_1=e8 if e_1=e7 and Action=e_Request_biobsy and Physi.Action=physi_requestBiopsy;
+		e_1=e9 if e_1=e8 and Action=e_collect_Tissue and Rad.Action=Rad_collect_Tissue;
+		e_1=e10 if e_1=e9 and Action=e_send_to_path and Rad.Action=Rad_send_to_path;
+		e_1=e11 if e_1=e10 and Action=e_path_recv_Tissue and Path.Action=Path_recv_Tissue;
+		e_1=e12 if e_1=e11 and Action=e_Anl_Tissue and Path.Action=Path_Anl_Tissue;
+		e_1=e13 if e_1=e12 and Action=e_Send_report_Physi and Path.Action=Send_report_Physi;
+		e_1=e14 if e_1=e12 and Action=e_Send_info_Reg and Path.Action=Send_info_Reg;
+		e_1=e15 if e_1=e13 and Action=e_Tret_plane and Physi.Action=physi_Tret_plane;
+		e_1=e15 if e_1=e14 and Action=e_Insert_info and Regis.Action=Insert_info;
+		e_1=e0 if e_1=e15 and Action=e_null ;
+	end Evolution
+end Agent
+
+Agent Physi
+	Vars:
+		ph:{ph0,ph1,ph2,ph3,ph4,ph5,ph6,ph7,ph8,ph9,ph10,ph11,ph12,ph13,ph14,ph15};
+		VP:{vp0,vp1,vp2}; -- to establish the trust with patient
+		VR:{vr0,vr1}; -- to establish the trust with Radiology 
+	end Vars
+	Actions = {physi_do_Exam,physi_refertoRadio,physi_requestBiopsy,Mass,NoMass, physi_Tret_plane,physi_null};
+	Protocol:
+		ph=ph1:{physi_do_Exam};
+		ph=ph2:{Mass,NoMass};
+		ph=ph3:{physi_refertoRadio};
+		ph=ph7:{physi_requestBiopsy};
+		ph=ph13:{physi_Tret_plane};
+		Other: {physi_null};
+	end Protocol
+	Evolution:
+		ph=ph1 and VP=vp0 and VR=vr0 if ph=ph0 and Patia.Action=patia_Ask_for_Exam and Environment.Action =e_Ask_for_Exam;
+		ph=ph2 and VP=vp0 and VR=vr0 if ph=ph1 and Action=physi_do_Exam and Environment.Action= e_Do_Exam;
+		ph=ph3 and VP=vp1 and VR=vr0 if ph=ph2 and Action=Mass and Environment.Action=e_Mass;
+		ph=ph0 and VP=vp0 and VR=vr0 if ph=ph2 and Action=NoMass and Environment.Action=e_NoMass ;
+		ph=ph4  and VP=vp1 and VR=vr0 if ph=ph3 and Action=physi_refertoRadio and Environment.Action=e_Refer_to_Rad;
+		ph=ph5 and VP=vp0 and VR=vr0 if ph=ph4 and Environment.Action=e_Perfor_image and Rad.Action=Perfor_image;
+		ph=ph6 and VR=vr1 and VP=vp0 if ph=ph5 and Environment.Action=e_Calc_detected and Rad.Action=Calc_detected ;
+		ph=ph7 and VR=vr1 and VP=vp0 if ph=ph6 and Environment.Action=e_Recommand_biobsy and Rad.Action=Recommand_biobsy;
+		ph=ph8 and VP=vp0 and VR=vr0 if ph=ph7 and Action=physi_requestBiopsy and Environment.Action=e_Request_biobsy ;
+		ph=ph9 and VP=vp0 and VR=vr0 if ph=ph8 and Environment.Action=e_collect_Tissue and Rad.Action=Rad_collect_Tissue;
+		ph=ph10 and VP=vp0 and VR=vr0 if ph=ph9 and Environment.Action=e_send_to_path and Rad.Action=Rad_send_to_path;
+		ph=ph11 and VP=vp0 and VR=vr0 if ph=ph10 and Environment.Action=e_path_recv_Tissue and Path.Action=Path_recv_Tissue;
+		ph=ph12 and VP=vp0 and VR=vr0 if ph=ph11 and Environment.Action=e_Anl_Tissue and Path.Action=Path_Anl_Tissue;
+		ph=ph13 and VP=vp2 and VR=vr0 if ph=ph12 and Environment.Action=e_Send_report_Physi and Path.Action=Send_report_Physi;
+		ph=ph14 and VP=vp0 and VR=vr0 if ph=ph12 and Environment.Action=e_Send_info_Reg and Path.Action=Send_info_Reg;
+		ph=ph15 and VP=vp2 and VR=vr0 if ph=ph13 and Environment.Action=e_Tret_plane and Physi.Action=physi_Tret_plane;
+		ph=ph15 and VP=vp0 and VR=vr0 if ph=ph14 and Environment.Action=e_Insert_info and Regis.Action=Insert_info;
+		ph=ph0 and  VP=vp0 and  VR=vr0 if ph=ph15 and Environment.Action=e_null ;
+	end Evolution
+end Agent
+
+Agent Patia
+	Vars:
+		Pa:{pa0,pa1,pa2,pa3,pa4,pa5,pa6,pa7,pa8,pa9,pa10,pa11,pa12,pa13,pa14,pa15};
+				
+		VP:{vp0,vp1,vp2}; -- to establish the trust with Physician
+		
+	end Vars
+	Actions = {patia_Ask_for_Exam,patia_null};
+	Protocol:
+		Pa=pa0: {patia_Ask_for_Exam};
+		Other:{patia_null};
+	end Protocol
+	Evolution:
+		Pa=pa1 and  VP=vp0 if Pa=pa0 and Action=patia_Ask_for_Exam and Environment.Action = e_Ask_for_Exam;
+		Pa=pa2 and  VP=vp0  if Pa=pa1 and Physi.Action=physi_do_Exam and Environment.Action= e_Do_Exam;
+		Pa=pa3 and VP=vp1 if Pa=pa2 and Physi.Action=Mass and Environment.Action=e_Mass;
+		Pa=pa0 and  VP=vp0  if Pa=pa2 and Physi.Action=NoMass and Environment.Action=e_NoMass ;
+		Pa=pa4 and VP=vp1 if Pa=pa3 and Physi.Action=physi_refertoRadio and Environment.Action=e_Refer_to_Rad;
+		Pa=pa5 and  VP=vp0  if Pa=pa4 and Environment.Action=e_Perfor_image and Rad.Action=Perfor_image;
+		Pa=pa6 and  VP=vp0  if Pa=pa5 and Environment.Action=e_Calc_detected and Rad.Action=Calc_detected ;
+		Pa=pa7 and  VP=vp0  if Pa=pa6 and Environment.Action=e_Recommand_biobsy and Rad.Action=Recommand_biobsy ;
+		Pa=pa8 and  VP=vp0  if Pa=pa7 and Environment.Action=e_Request_biobsy and Physi.Action=physi_requestBiopsy;
+		Pa=pa9 and  VP=vp0  if Pa=pa8 and Environment.Action=e_collect_Tissue and Rad.Action=Rad_collect_Tissue;
+		Pa=pa10 and  VP=vp0  if Pa=pa9 and Environment.Action=e_send_to_path and Rad.Action=Rad_send_to_path;
+		Pa=pa11 and  VP=vp0  if Pa=pa10 and Environment.Action=e_path_recv_Tissue and Path.Action=Path_recv_Tissue;
+		Pa=pa12 and  VP=vp0  if Pa=pa11 and Environment.Action=e_Anl_Tissue and Path.Action=Path_Anl_Tissue;
+		Pa=pa13 and  VP=vp2 if Pa=pa12 and Environment.Action=e_Send_report_Physi and Path.Action=Send_report_Physi;
+		Pa=pa14 and  VP=vp0  if Pa=pa12 and Environment.Action=e_Send_info_Reg and Path.Action=Send_info_Reg;
+		Pa=pa15  and VP=vp2  if  Pa=pa13 and Environment.Action=e_Tret_plane and Physi.Action=physi_Tret_plane;
+		Pa=pa15 and  VP=vp0  if Pa=pa14 and Environment.Action=e_Insert_info and Regis.Action=Insert_info;
+		Pa=pa0 and  VP=vp0  if Pa=pa15 and Environment.Action=e_null ;
+	end Evolution
+end Agent
+
+Agent Rad
+	Vars:
+		Rd:{Rd0,Rd1,Rd2,Rd3,Rd4,Rd5,Rd6,Rd7,Rd8,Rd9,Rd10,Rd11,Rd12,Rd13,Rd14,Rd15};
+		VR:{vr0,vr1}; -- to establish the trust with Physician 
+		
+	end Vars
+	Actions = {Perfor_image,Recommand_biobsy,Calc_detected,Rad_collect_Tissue,Rad_send_to_path,Rad_null};
+	Protocol:
+		Rd=Rd4:{Perfor_image};
+		Rd=Rd5:{Calc_detected};
+		Rd=Rd6:{Recommand_biobsy};
+		Rd=Rd8:{Rad_collect_Tissue};
+		Rd=Rd9:{Rad_send_to_path};
+		Other:{Rad_null};
+	end Protocol
+	Evolution:
+		Rd=Rd1 and VR=vr0 if Rd=Rd0 and Patia.Action=patia_Ask_for_Exam and Environment.Action = e_Ask_for_Exam;
+		Rd=Rd2 and VR=vr0 if Rd=Rd1 and Physi.Action=physi_do_Exam and Environment.Action= e_Do_Exam;
+		Rd=Rd3 and VR=vr0 if Rd=Rd2 and Physi.Action=Mass and Environment.Action=e_Mass;
+		Rd=Rd0 and VR=vr0 if Rd=Rd2 and Physi.Action=NoMass and Environment.Action=e_NoMass ;
+		Rd=Rd4 and VR=vr0 if Rd=Rd3 and Physi.Action=physi_refertoRadio and Environment.Action=e_Refer_to_Rad;
+		Rd=Rd5 and VR=vr0 if Rd=Rd4 and Environment.Action=e_Perfor_image and Action=Perfor_image;
+		Rd=Rd6 and VR=vr1 if Rd=Rd5 and Environment.Action=e_Calc_detected and Action=Calc_detected ;
+		Rd=Rd7 and VR=vr1 if Rd=Rd6 and Environment.Action=e_Recommand_biobsy and Action=Recommand_biobsy ;
+		Rd=Rd8 and VR=vr0 if Rd=Rd7 and Environment.Action=e_Request_biobsy and Physi.Action=physi_requestBiopsy;
+		Rd=Rd9 and VR=vr0 if Rd=Rd8 and Environment.Action=e_collect_Tissue and Action=Rad_collect_Tissue;
+		Rd=Rd10 and VR=vr0 if Rd=Rd9 and Environment.Action=e_send_to_path and Action=Rad_send_to_path;
+		Rd=Rd11 and VR=vr0 if Rd=Rd10 and Environment.Action=e_path_recv_Tissue and Path.Action=Path_recv_Tissue;
+		Rd=Rd12 and VR=vr0 if Rd=Rd11 and Environment.Action=e_Anl_Tissue and Path.Action=Path_Anl_Tissue;
+		Rd=Rd13 and VR=vr0 if Rd=Rd12 and Environment.Action=e_Send_report_Physi and Path.Action=Send_report_Physi;
+		Rd=Rd14 and VR=vr0 if Rd=Rd12 and Environment.Action=e_Send_info_Reg and Path.Action=Send_info_Reg;
+		Rd=Rd15 and VR=vr0 if Rd=Rd13 and Environment.Action=e_Tret_plane and Physi.Action=physi_Tret_plane;
+		Rd=Rd15 and VR=vr0 if Rd=Rd14 and Environment.Action=e_Insert_info and Regis.Action=Insert_info;
+		Rd=Rd0 and VR=vr0 if Rd=Rd15 and Environment.Action=e_null ;
+	end Evolution
+end Agent
+
+Agent Path
+	Vars:
+		Pt:{Pt0,Pt1,Pt2,Pt3,Pt4,Pt5,Pt6,Pt7,Pt8,Pt9,Pt10,Pt11,Pt12,Pt13,Pt14,Pt15};
+		
+	end Vars
+	Actions = {Path_recv_Tissue,Path_Anl_Tissue,Send_report_Physi,Send_info_Reg,null};
+	Protocol:
+		Pt=Pt10:{Path_recv_Tissue};
+		Pt=Pt11:{Path_Anl_Tissue};
+		Pt=Pt12:{Send_report_Physi,Send_info_Reg };
+		Other:{null};
+	end Protocol
+	Evolution:
+		Pt=Pt1 if Pt=Pt0 and Patia.Action=patia_Ask_for_Exam and Environment.Action = e_Ask_for_Exam;
+		Pt=Pt2 if Pt=Pt1 and Physi.Action=physi_do_Exam and Environment.Action= e_Do_Exam;
+		Pt=Pt3  if Pt=Pt2 and Physi.Action=Mass and Environment.Action=e_Mass;
+		Pt=Pt0 if Pt=Pt2 and Physi.Action=NoMass and Environment.Action=e_NoMass ;
+		Pt=Pt4  if Pt=Pt3 and Physi.Action=physi_refertoRadio and Environment.Action=e_Refer_to_Rad;
+		Pt=Pt5 if Pt=Pt4 and Environment.Action=e_Perfor_image and Rad.Action=Perfor_image;
+		Pt=Pt6 if Pt=Pt5 and Environment.Action=e_Calc_detected and Rad.Action=Calc_detected ;
+		Pt=Pt7 if Pt=Pt6 and Environment.Action=e_Recommand_biobsy and Rad.Action=Recommand_biobsy ;
+		Pt=Pt8 if Pt=Pt7 and Environment.Action=e_Request_biobsy and Physi.Action=physi_requestBiopsy;
+		Pt=Pt9 if Pt=Pt8 and Environment.Action=e_collect_Tissue and Rad.Action=Rad_collect_Tissue;
+		Pt=Pt10 if Pt=Pt9 and Environment.Action=e_send_to_path and Rad.Action=Rad_send_to_path;
+		Pt=Pt11 if Pt=Pt10 and Environment.Action=e_path_recv_Tissue and Path.Action=Path_recv_Tissue;
+		Pt=Pt12 if Pt=Pt11 and Environment.Action=e_Anl_Tissue and Path.Action=Path_Anl_Tissue;
+		Pt=Pt13 if Pt=Pt12 and Environment.Action=e_Send_report_Physi and Path.Action=Send_report_Physi;
+		Pt=Pt14 if Pt=Pt12 and Environment.Action=e_Send_info_Reg and Path.Action=Send_info_Reg;
+		Pt=Pt15 if Pt=Pt13 and Environment.Action=e_Tret_plane and Physi.Action=physi_Tret_plane;
+		Pt=Pt15 if Pt=Pt14 and Environment.Action=e_Insert_info and Regis.Action=Insert_info;
+		Pt=Pt0 if Pt=Pt15 and Environment.Action=e_null ;
+	end Evolution
+end Agent
+
+Agent Regis
+	Vars:
+		Rg:{Rg0,Rg1,Rg2,Rg3,Rg4,Rg5,Rg6,Rg7,Rg8,Rg9,Rg10,Rg11,Rg12,Rg13,Rg14,Rg15};
+		
+	end Vars
+	Actions = {Insert_info,null};
+	Protocol:
+		Rg=Rg14:{Insert_info};
+		Other:{null};
+	end Protocol
+	Evolution:
+		Rg=Rg1 if Rg=Rg0 and Patia.Action=patia_Ask_for_Exam and Environment.Action = e_Ask_for_Exam;
+		Rg=Rg2 if Rg=Rg1 and Physi.Action=physi_do_Exam and Environment.Action= e_Do_Exam;
+		Rg=Rg3 if Rg=Rg2 and Physi.Action=Mass and Environment.Action=e_Mass;
+		Rg=Rg0 if Rg=Rg2 and Physi.Action=NoMass and Environment.Action=e_NoMass ;
+		Rg=Rg4 if Rg=Rg3 and Physi.Action=physi_refertoRadio and Environment.Action=e_Refer_to_Rad;
+		Rg=Rg5 if Rg=Rg4 and Environment.Action=e_Perfor_image and Rad.Action=Perfor_image;
+		Rg=Rg6 if Rg=Rg5 and Environment.Action=e_Calc_detected and Rad.Action=Calc_detected ;
+		Rg=Rg7 if Rg=Rg6 and Environment.Action=e_Recommand_biobsy and Rad.Action=Recommand_biobsy ;
+		Rg=Rg8 if Rg=Rg7 and Environment.Action=e_Request_biobsy and Physi.Action=physi_requestBiopsy;
+		Rg=Rg9 if Rg=Rg8 and Environment.Action=e_collect_Tissue and Rad.Action=Rad_collect_Tissue;
+		Rg=Rg10 if Rg=Rg9 and Environment.Action=e_send_to_path and Rad.Action=Rad_send_to_path;
+		Rg=Rg11 if Rg=Rg10 and Environment.Action=e_path_recv_Tissue and Path.Action=Path_recv_Tissue;
+		Rg=Rg12 if Rg=Rg11 and Environment.Action=e_Anl_Tissue and Path.Action=Path_Anl_Tissue;
+		Rg=Rg13 if Rg=Rg12 and Environment.Action=e_Send_report_Physi and Path.Action=Send_report_Physi;
+		Rg=Rg14 if Rg=Rg12 and Environment.Action=e_Send_info_Reg and Path.Action=Send_info_Reg;
+		Rg=Rg15 if Rg=Rg13 and Environment.Action=e_Tret_plane and Physi.Action=physi_Tret_plane;
+		Rg=Rg15 if Rg=Rg14 and Environment.Action=e_Insert_info and Regis.Action=Insert_info;
+		Rg=Rg0 if Rg=Rg15 and Environment.Action=e_null ;
+	end Evolution
+end Agent
+
+Evaluation
+	MassDetected if Environment.e_1=e2 or Environment.e_1=e3 ;
+	Mammo_Refered if Environment.e_1=e4 ;
+	Calcification_Detected if  Environment.e_1=e6;
+	Treatment_Plan_Agreed if Physi.ph=ph15 and Environment.e_1=e15;
+	Biopys_recomm if  Environment.e_1=e7;
+	Report_received if  Environment.e_1=e13;
+	
+end Evaluation
+
+InitStates
+	Physi.ph=ph0 and Physi.VP=vp0 and Physi.VR=vr0 and Patia.Pa=pa0 and Patia.VP=vp0 and Rad.Rd=Rd0 and Rad.VR=vr0 and Path.Pt=Pt0 and Regis.Rg=Rg0 and Environment.e_1= e0;
+end InitStates
+
+Formulae
+
+EF Tr(Patia, Physi, MassDetected, Mammo_Refered);
+EF Tr(Physi,Rad,  Calcification_Detected, Biopys_recomm );
+
+EF Tr(Patia, Physi, Report_received, Treatment_Plan_Agreed);
+
+	--AG EF MassDetected;
+	--EF (MassDetected -> AF Mammo_Refered);
+end Formulae

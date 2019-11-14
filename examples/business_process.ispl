@@ -1,0 +1,167 @@
+Agent Environment
+    Vars:
+    	e:{e0,e1,e2,e3,e4,e5,e6,e7,e8,e9,e10,e10,e11,e12,e13,e14,e15};
+    	x :{x0,x1}; --shared var. with j
+    	z :{z0,z1}; --shared var. with k
+    	a :{a0,a1}; --shared var. with n
+    end Vars
+    Actions = {ac1,ac2,ac3,ac4,ac5,ac6,ac7,ac8,ac9,ac10,ac11,ac12,ac13,ac14,null_e};
+    Protocol:
+    	e=e0:{ac1,ac2};
+    	e=e2:{ac3,ac4};
+    	e=e4:{ac5};
+    	e=e5:{ac6,ac10};
+    	e=e6:{ac7,ac8};
+    	e=e8:{ac9};
+    	e=e10:{ac11,ac12,ac13};
+    	e=e13:{ac14};
+    	Other:{null_e};
+    end Protocol
+    Evolution:
+    	e=e1 if e=e0 and Action=ac1;
+    	e=e2 if e=e0 and Action=ac2 and i.Action=Delegate_i;
+    	e=e3 if e=e2 and Action=ac3;
+    	e=e4 if e=e2 and Action=ac4 and k.Action=Fulfill_k;
+    	e=e5 if e=e4 and Action=ac5;
+    	e=e6 if e=e5 and Action=ac6;
+    	e=e7 if e=e6 and Action=ac7;
+    	e=e8 if e=e6 and Action=ac8 and m.Action=Cancel_m;
+    	e=e9 if e=e8 and Action=ac9;
+    	e=e10 if e=e5 and Action=ac10 and i.Action=Assign_i;
+    	e=e11 if e=e10 and Action=ac11;
+    	e=e12 if e=e10 and Action=ac12; 
+    	e=e13 if e=e10 and Action=ac13 and k.Action=Release_k;
+    	e=e14 if e=e13 and Action=ac14;
+    end Evolution
+end Agent
+
+Agent i
+    Vars:
+    	l_i :{i0,i1,i2,i3,i4,i5,i6,i7,i8};
+    	x :{x0,x1}; --shared var. with j
+    	u :{u0,u1}; --unshared var. with j
+    end Vars
+    Actions = {Delegate_i,Assign_i,null_i};
+    Protocol:
+    	l_i=i0 :{Delegate_i};
+    	l_i=i1 :{Assign_i};
+    	Other:{null_i};
+    end Protocol
+    Evolution:
+    	l_i=i0  if l_i=i0 and Environment.Action=ac1;
+    	l_i=i1 and x=x0  and u=u1 if l_i=i0 and Environment.Action=ac5;
+    	l_i=i2 and x=x1  and u=u1 if l_i=i1 and Environment.Action=ac6;
+    	l_i=i3 and x=x1 and u=u1 if l_i=i1 and Action=Assign_i and Environment.Action=ac10;
+    	l_i=i4 and x=x1 and u=u1 if l_i=i3 and Environment.Action=ac11;
+    	--l_i=i8 if l_i=i6 and Action=ac4;
+    end Evolution
+end Agent
+
+Agent j
+    Vars:
+    	l_j :{j0,j1,j2,j3,j4,j5};
+    	x :{x0,x1}; --shared var. with i
+    	y:{y0,y1}; --unshared var. with i
+    	z :{z0,z1}; --shared var. with k
+    	w :{w0,w1}; --unshared var. with k
+    end Vars
+    Actions = {null_j};
+    Protocol:
+    	Other:{null_j};
+    end Protocol
+    Evolution:
+    	l_j=j1 and x=x1 and y=y0 if l_j=j0 and Environment.Action=ac1;
+    	l_j=j2 and x=x1 and y=y0 if l_j=j0 and Environment.Action=ac2 and i.Action=Delegate_i;
+    	l_j=j3 and x=x1 and y=y0 if l_j=j2 and Environment.Action=ac3;
+    	l_j=j4 and z=z0 and w=w1 if l_j=j2 and Environment.Action=ac4 and k.Action=Fulfill_k;
+    	l_j=j5 and z=z0 and w=w1 and x=x1 if l_j=j4 and Environment.Action=ac5;
+    end Evolution
+end Agent
+
+Agent k
+   Vars:
+  	l_k :{k0,k1,k2,k3,k4};
+    z :{z0,z1}; --shared var. with j
+    v :{v0,v1}; --unshared var. with j
+   end Vars
+   Actions = {Fulfill_k,Release_k,null_k};
+   Protocol:
+     l_k=k0 :{Fulfill_k};
+   	  l_k=k1 :{Release_k};
+    	Other:{null_k};
+    end Protocol
+    Evolution:
+    	l_k=k0 if l_k=k0 and Environment.Action=ac4; 
+    	l_k=k1 and z=z1 and v=v1 if l_k=k0 and Environment.Action=ac10;
+    	l_k=k2 and z=z0 and v=v1 if l_k=k1 and Environment.Action=ac12; 
+    	l_k=k3 and z=z0 and v=v1 if l_k=k1 and Environment.Action=ac13 and Action=Release_k;
+    	l_k=k4 and z=z0 and v=v1 if l_k=k3 and Environment.Action=ac14;
+    end Evolution
+end Agent
+
+Agent m
+    Vars:
+     l_m :{m0};
+     a :{a0,a1}; --shared var. with n
+    end Vars
+    Actions = {Cancel_m};
+    Protocol:
+    	l_m=m0 :{Cancel_m};
+    end Protocol
+    Evolution:
+    	l_m=m0 if l_m=m0 and Environment.Action=ac7;
+    end Evolution
+end Agent
+
+Agent n
+   Vars:
+    l_n :{n0,n1,n2,n3};
+    a :{a0,a1}; --shared var. with m
+    b :{b0,b1}; --unshared var. with m
+   end Vars
+   Actions = {null_n};
+   Protocol:
+   Other :{null_n};
+   end Protocol
+   Evolution:
+    	l_n=n1 and a=a0 and b=b1 if l_n=n0 and Environment.Action=ac7;
+    	l_n=n2 and a=a0 and b=b1 if l_n=n0 and m.Action=Cancel_m and Environment.Action=ac8;
+    	l_n=n3 and a=a0 and b=b1 if l_n=n2 and Environment.Action=ac9;
+    end Evolution
+end Agent
+
+Evaluation
+	t if Environment.e=e1 or Environment.e=e3 or Environment.e=e4 or Environment.e=e5; 
+	r if Environment.e=e1 or Environment.e=e4;
+	p if Environment.e=e6 or Environment.e=e11 or Environment.e=e12 or Environment.e=e14;
+	q if Environment.e=e6 or Environment.e=e12;
+	g if Environment.e=e7 or Environment.e=e9;
+	h if Environment.e=e7;
+end Evaluation
+
+InitStates
+	Environment.e=e0 and Environment.x=x0 and Environment.z=z0 and Environment.a=a0
+	and 
+	i.l_i=i0 and i.x=x1 and i.u=u0
+	and 
+	j.l_j=j0 and j.x=x0 and j.y=y0 and j.z=z1 and j.w=w1 
+	and 
+	k.l_k=k0 and k.z=z0 and k.v=v1 
+	and 
+	m.l_m=m0 and m.a=a0
+	and 
+	n.l_n=n0 and n.a=a1 and n.b=b1;
+end InitStates
+
+Formulae
+	EF SCC(i,j,t,r);
+	EF SCC(k,j,t,r);
+	EF DeS(i,j,k,t,r);
+	EF FuS(k,j,t,r);
+	EF SCC(j,i,p,q);
+	EF SCC(m,n,g,h);
+	EF CaS(m,n,g,h);
+	EF SCC(j,k,p,q);
+	EF AsS(j,i,k,p,q);
+	EF ReS(j,k,p,q);
+end Formulae

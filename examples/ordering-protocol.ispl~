@@ -1,0 +1,83 @@
+Agent Environment
+    Vars:
+    	pr: {p0,p1,p2,p3,p4};
+    	y:{y0,y1};
+    	z:{z0,z1};
+    end Vars
+    Actions = {p_requestQuote,p_offer,p_com1,p_acceptQuote,p_loop,p_null};
+    Protocol:
+    	pr=p0 : {p_requestQuote,p_loop};
+    	pr=p1 : {p_offer};
+    	pr=p2 : {p_com1};
+    	pr=p3 : {p_acceptQuote};
+    	pr=p4 : {p_null};
+    	Other: {p_loop};
+    end Protocol
+    Evolution:
+    pr=p0 if pr=p4 and Action=p_null;
+    pr=p1 if pr=p0 and Action=p_requestQuote;
+    pr=p2 if pr=p1 and Action=p_offer;
+    pr=p3 if pr=p2 and Action=p_com1;
+    pr=p4 if pr=p3 and Action=p_acceptQuote;
+    end Evolution
+end Agent
+
+Agent Seller
+    Vars:
+    	s: {s0,s1,s2,s3};
+    	x:{x0,x1};
+    	z:{z0,z1};
+    end Vars
+    Actions = {s_offer,s_com1,s_null};
+    Protocol:
+    	s=s1 : {s_offer};
+    	s=s2 : {s_com1};
+    Other: {s_null};
+    end Protocol
+    Evolution:
+    s=s1 if s=s0 and Environment.Action=p_requestQuote and Buyer.Action=b_requestQuote;
+    s=s2 and x=x0 if s=s1 and Action=s_offer and Environment.Action=p_offer;
+    s=s3 and x=x0 and z=z0 if s=s2 and Buyer.Action=b_acceptQuote and Environment.Action=p_acceptQuote;
+    s=s0 and x=x0 and z=z0 if s=s3 and Environment.Action=p_null;
+   end Evolution
+end Agent
+
+Agent Buyer
+    Vars:
+    	b: {b0,b1,b2,b3};
+    	x:{x0,x1};
+    	y:{y0,y1};
+    end Vars
+    Actions = {b_requestQuote,b_acceptQuote,b_null};
+    Protocol:
+    	b=b0 : {b_requestQuote};
+    	b=b3 : {b_acceptQuote};
+    Other: {b_null};
+    end Protocol
+    Evolution:
+    b=b1 if b=b0 and Action=b_requestQuote and Environment.Action=p_requestQuote;
+    b=b2 and x=x1 and y=y1 if b=b1 and Seller.Action=s_offer and Environment.Action=p_offer;
+    b=b3 and x=x0 and y=y1 if b=b2 and Environment.Action=p_com1 and Seller.Action=s_com1;
+    b=b0 and x=x0 and y=y1 if b=b3 and Environment.Action=p_null;
+   end Evolution
+end Agent
+
+Evaluation
+	aPrice if Environment.pr=p3;
+	dGoods if Environment.pr=p3 or Environment.pr=p4;
+	sPayment if Environment.pr=p4;
+	
+end Evaluation
+
+InitStates
+	Environment.pr=p0 and Environment.y=y0 and Environment.z=z0
+	and
+	Seller.s=s0 and Seller.x=x0 and Seller.z=z0
+	and
+	Buyer.b=b0 and Buyer.x=x0 and Buyer.y=y1;
+end InitStates
+
+Formulae
+	EF SCC(Seller,Buyer,aPrice,EF dGoods);
+	EF SCC(Buyer,Seller,dGoods,EF sPayment);
+end Formulae

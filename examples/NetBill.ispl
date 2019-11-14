@@ -1,0 +1,76 @@
+Agent Environment1
+	Vars:
+		pr_1: {p0,p1,p2,p3,p4};
+
+	end Vars
+	Actions = {p_requestprice,p_offer,p_trust,p_acceptoffer,p_loop,p_null};
+	Protocol:
+		pr_1=p0 : {p_requestprice};
+		pr_1=p1 : {p_offer};
+		pr_1=p2 : {p_acceptoffer};
+		pr_1=p3 : {p_trust};
+		Other: {p_null};
+	end Protocol
+	Evolution:
+		pr_1=p1 if pr_1=p0 and Action=p_requestprice and Customer.Action=request_price;
+		pr_1=p2 if pr_1=p1 and Action=p_offer and Merchant.Action=present_Offer;
+		pr_1=p3 if pr_1=p2 and Action=p_acceptoffer and Customer.Action=accept_offer;
+		pr_1=p4 if pr_1=p3 and Action=p_trust and Customer.Action=trust;
+		pr_1=p0 if pr_1=p4 and Action=p_null;
+	end Evolution
+end Agent
+
+Agent Customer
+	Vars:
+		state : {Cus_0,Cus_1,Cus_2,Cus_3,Cus_4};
+		V:{v0,v1};
+	end Vars
+	Actions = {request_price,accept_offer,trust,null};
+	Protocol:
+		state=Cus_0 : {request_price};
+		state=Cus_2 : {accept_offer};
+		state=Cus_3 : {trust};
+		state=Cus_3 : {trust};
+		Other:{null};
+	end Protocol
+	Evolution:
+		state=Cus_1 if state=Cus_0 and Action=request_price and Environment1.Action=p_requestprice;
+		state=Cus_2 if state=Cus_1 and Merchant.Action=present_Offer and Environment1.Action=p_offer;
+		state=Cus_3 and V=v1 if state=Cus_2 and Environment1.Action=p_acceptoffer and Customer.Action=accept_offer;
+		state=Cus_4 and V=v1 if state=Cus_3 and Environment1.Action=p_trust and Customer.Action=trust;
+		state=Cus_0 and V=v0 if state=Cus_4 and Environment1.Action= p_null;
+	end Evolution
+end Agent
+
+Agent Merchant
+	Vars:
+		state1 : {Mer_0,Mer_1,Mer_2,Mer_3,Mer_4};
+		V:{v0,v1};
+	end Vars
+	Actions = {present_Offer,null};
+	Protocol:
+		state1=Mer_1 : {present_Offer};
+		Other:{null};
+	end Protocol
+	Evolution:
+		state1=Mer_1 if state1=Mer_0 and Environment1.Action=p_requestprice and Customer.Action=request_price;
+		state1=Mer_2 and V=v0 if state1=Mer_1 and Action=present_Offer and Environment1.Action=p_offer;
+		state1=Mer_3 and V=v1 if state1=Mer_2 and Customer.Action=accept_offer and Environment1.Action=p_acceptoffer;
+		state1=Mer_4 and V=v1 if state1=Mer_3 and Environment1.Action=p_trust and Customer.Action=trust;
+		state1=Mer_0 and V=v0 if state1=Mer_4 and Environment1.Action= p_null;
+	end Evolution
+end Agent
+
+Evaluation
+	-- trust 
+	DeliverGoods if Environment1.pr_1=p3 or Environment1.pr_1=p4;
+	AcceptOffer if Environment1.pr_1=p3;
+end Evaluation
+
+InitStates
+	Customer.state=Cus_0 and Customer.V=v0 and Merchant.state1=Mer_0 and Merchant.V=v0 and Environment1.pr_1=p0 ;
+end InitStates
+
+Formulae
+	EF (Tr(Customer, Merchant, AcceptOffer, DeliverGoods));
+end Formulae
